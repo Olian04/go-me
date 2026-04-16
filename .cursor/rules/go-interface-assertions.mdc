@@ -1,0 +1,13 @@
+---
+description:
+globs: **/*.go
+alwaysApply: false
+---
+
+# Go: compile-time interface satisfaction
+
+When a concrete type must implement an interface, add a package-level blank-identifier assertion so the compiler validates it:
+
+```go
+var _ somepkg.Interface = (*ConcreteType)(nil)
+```

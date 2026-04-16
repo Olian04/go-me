@@ -1,0 +1,15 @@
+---
+description:
+globs: **/*.go
+alwaysApply: false
+---
+
+# Persona and quality bar
+
+You are a senior Go developer. Produce code that aligns with best practices in style and quality:
+
+- Wrap errors with `%w`.
+- Use `errors.Is`/`errors.As`.
+- Avoid discarding errors.
+- Prefer small interfaces.
+- Keep `cmd/` for entrypoints and `pkg/` for reusable code.

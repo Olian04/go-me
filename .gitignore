@@ -30,3 +30,12 @@ go.work.sum
 # Editor/IDE
 # .idea/
 # .vscode/
+
+# Worktrees
+.worktrees/
+
+# Local binary and artifacts
+me
+bench.txt
+tmp
+dist/

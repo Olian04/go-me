@@ -1,0 +1,9 @@
+---
+description:
+globs: **/*.go
+alwaysApply: false
+---
+
+# Go quality reviewer subagent skill
+
+Read and follow `.cursor/skills/go-quality-reviewer-subagent/SKILL.md` when Go quality review is requested or after substantive Go changes.

@@ -1,0 +1,8 @@
+---
+description: Align all code changes with docs/AGENTS.md (layout, naming, anti-patterns).
+alwaysApply: true
+---
+
+# Align with `docs/AGENTS.md`
+
+For every modification to code in this repository, follow `docs/AGENTS.md` so changes stay consistent with project vocabulary, package boundaries, and repo conventions.
