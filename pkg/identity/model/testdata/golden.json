@@ -1,0 +1,42 @@
+{
+  "subject": {
+    "username": "alice",
+    "display_name": "",
+    "uid": "1000",
+    "gid": "1000",
+    "home_dir": "/home/alice",
+    "shell": "/bin/bash"
+  },
+  "sources": [
+    {
+      "name": "osaccount",
+      "status": "ok",
+      "duration_ms": 1,
+      "data": {
+        "username": "alice",
+        "uid": "1000",
+        "gid": "1000",
+        "home_dir": "/home/alice",
+        "shell": "/bin/bash",
+        "group_ids": ["1000", "27"],
+        "groups": ["1000(alice)", "27(sudo)"]
+      }
+    },
+    {
+      "name": "sysinfo",
+      "status": "ok",
+      "duration_ms": 0,
+      "data": {
+        "platform": "linux",
+        "arch": "amd64"
+      }
+    }
+  ],
+  "meta": {
+    "hostname": "host.example",
+    "timestamp": "2020-01-02T15:04:05Z",
+    "duration_ms": 10,
+    "best_effort": true
+  },
+  "errors": []
+}

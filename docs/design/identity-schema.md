@@ -22,7 +22,7 @@ Schema ownership:
   },
   "sources": [
     {
-      "name": "osaccount|envcontext|network|authproviders",
+      "name": "osaccount|envcontext|network|sysinfo|authproviders",
       "status": "ok|partial|error|unavailable",
       "duration_ms": 0,
       "data": {},
@@ -30,8 +30,6 @@ Schema ownership:
     }
   ],
   "meta": {
-    "platform": "string",
-    "arch": "string",
     "hostname": "string",
     "timestamp": "RFC3339",
     "duration_ms": 0,
@@ -69,7 +67,7 @@ Per-provider output envelope:
 
 ### `meta`
 
-Run-level metadata for diagnostics and observability.
+Run-level metadata for diagnostics and observability (hostname, run timing, best-effort flag). OS family, architecture, and friendly OS name/version live under the `sysinfo` source `data` object.
 
 ### `errors[]`
 
@@ -117,6 +115,19 @@ Aggregated non-fatal errors (best-effort mode) or fatal context before strict-mo
 }
 ```
 
+## `sysinfo`
+
+`GOOS` / `GOARCH` and best-effort OS name/version from `pkg/sysinfo`:
+
+```json
+{
+  "platform": "string",
+  "arch": "string",
+  "os_name": "string",
+  "os_version": "string"
+}
+```
+
 ## `authproviders`
 
 ```json
@@ -148,7 +159,7 @@ Aggregated non-fatal errors (best-effort mode) or fatal context before strict-mo
 
 ## Command-Specific Structured Responses
 
-- `me --json` / `me --yaml`: canonical payload, with provider set controlled by `--source`.
+- `me --json` / `me --yaml`: canonical payload, with provider set controlled by `--source` (default when omitted: all of `osaccount`, `envcontext`, `network`, `sysinfo`, `authproviders`).
 - `me whoami`: strict compatibility command, plain username output only (outside this schema).
 - `me --version`: separate small schema/value output path:
   - `version`

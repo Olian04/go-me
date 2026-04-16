@@ -63,7 +63,7 @@ brews:
       owner: "{{ .Env.HOMEBREW_TAP_OWNER }}"
       name: "{{ .Env.HOMEBREW_TAP_NAME }}"
       branch: main
-      token: "{{ .Env.GITHUB_TOKEN }}"
+      token: "{{ .Env.HOMEBREW_TAP_TOKEN }}"
     homepage: "https://github.com/Olian04/go-me"
     description: "me CLI"
     license: "AGPL-3.0-only"
@@ -79,7 +79,7 @@ scoops:
       owner: "{{ .Env.SCOOP_BUCKET_OWNER }}"
       name: "{{ .Env.SCOOP_BUCKET_NAME }}"
       branch: main
-      token: "{{ .Env.GITHUB_TOKEN }}"
+      token: "{{ .Env.SCOOP_BUCKET_TOKEN }}"
     homepage: "https://github.com/Olian04/go-me"
     description: "me CLI"
     license: "AGPL-3.0-only"
@@ -99,7 +99,7 @@ winget:
       owner: "{{ .Env.WINGET_REPO_OWNER }}"
       name: "{{ .Env.WINGET_REPO_NAME }}"
       branch: main
-      token: "{{ .Env.GITHUB_TOKEN }}"
+      token: "{{ .Env.WINGET_TOKEN }}"
 
 nfpms:
   - id: me
@@ -117,6 +117,10 @@ nfpms:
     contents:
       - src: ./LICENSE
         dst: /usr/share/licenses/me/LICENSE
+      - src: ./goreleaser/man/me.1
+        dst: /usr/share/man/man1/me.1
+      - src: ./goreleaser/man/me-whoami.1
+        dst: /usr/share/man/man1/me-whoami.1
 
 release:
   prerelease: auto

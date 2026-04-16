@@ -10,9 +10,21 @@ This document summarizes repository structure and naming conventions so changes 
 
 | Path | Role |
 | --- | --- |
-| `cmd/me` | CLI entrypoint and argument handling. |
-| `cmd/me/version` | Version/build metadata populated via ldflags. |
-| `pkg/` | Library and domain packages used by `cmd`. |
+| `cmd/me` | CLI entrypoint and argument handling (`urfave/cli/v3`). |
+| `cmd/me/version` | Version/build metadata (ldflags + `runtime/debug` fallback). |
+| `cmd/me/render` | Human-readable text formatting for the default command. |
+| `pkg/identity/model` | Canonical identity payload for JSON/YAML. |
+| `pkg/identity/provider` | Provider interface for identity sources. |
+| `pkg/aggregate` | Provider orchestration, timeouts, merge rules. Default run order (`DefaultSources`): `osaccount`, `envcontext`, `network`, `sysinfo` (`authproviders` is opt-in via `--source`). |
+| `pkg/sysinfo` | Best-effort host OS name/version (`/etc/os-release`, `sw_vers`, etc.). |
+| `pkg/identity/osaccount` | OS account / user lookup provider. |
+| `pkg/identity/envcontext` | Environment context (sudo/ssh/CI hints). |
+| `pkg/identity/network` | Hostname and local network hints. |
+| `pkg/identity/sysinfo` | Identity provider: `GOOS`/`GOARCH`, OS name/version via `pkg/sysinfo` (default-on). |
+| `pkg/identity/authproviders` | Best-effort git/cloud identity hints. |
+| `pkg/compact` | v1 compact fingerprint slots. |
+| `pkg/gnu` | GNU `whoami`/`id` text projections. |
+| `pkg/` | Other library packages used by `cmd`. |
 | `test/unit` | Unit tests by package focus. |
 | `test/integration` | Integration/system tests when needed. |
 | `.cursor/` | Agent rules, skills, and command docs for AI workflows. |

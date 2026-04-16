@@ -39,3 +39,8 @@ me
 bench.txt
 tmp
 dist/
+
+# Explicitly include source files
+!cmd/*
+!pkg/*
+!test/*

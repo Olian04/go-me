@@ -1,0 +1,45 @@
+.TH ME 1
+.SH NAME
+me \- show identity summary for the current user and environment
+.SH SYNOPSIS
+.B me
+.RI [ flags ]
+.br
+.B me whoami
+.br
+.B me id
+.RI [ GNU\ id\ options ]
+.SH DESCRIPTION
+The default
+.B me
+command prints identity information using structured providers.
+.PP
+By default (when
+.B \-\-source
+is not used), these providers run, in order:
+.BR osaccount ,
+.BR envcontext ,
+.BR network ,
+.BR sysinfo ,
+and
+.BR authproviders
+(git and cloud identity hints).
+If any
+.B \-\-source
+is given, it
+.I replaces
+that full default list entirely (list only the providers you want).
+.PP
+.B me whoami
+prints the effective user name (GNU whoami compatibility).
+.PP
+.B me id
+prints user and group identifiers (GNU id compatibility, documented subset of options).
+.SH OPTIONS
+See
+.B me \-\-help
+for the full flag list, including the complete
+.B \-\-source
+description and all valid provider names.
+.SH EXIT STATUS
+0 on success, 2 for usage errors, 3 for strict/provider failures, 4 for internal errors.

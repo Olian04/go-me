@@ -16,11 +16,12 @@ me [global flags] <command> [command flags] [args...]
 | `--yaml`          | bool                         | `false`                        | top-level `me`          | Structured YAML output                   |
 | `--no-color`      | bool                         | `false`                        | text output             | Disable ANSI colors                      |
 | `--timeout`       | duration                     | `2s`                           | top-level `me`          | Provider deadline budget                 |
-| `--source`        | repeatable/comma-list string | default provider set           | top-level `me`          | Restrict providers by name               |
-| `--best-effort`   | bool                         | `true`                         | top-level `me`          | Partial results allowed (default mode)   |
-| `--strict`        | bool                         | `false`                        | top-level `me`          | Strict validation/failure mode           |
+| `--source`        | repeatable/comma-list string | see provider table below       | top-level `me`          | Provider list; replaces defaults when set |
+| `--strict`        | bool                         | `false`                        | top-level `me`          | Strict validation; unknown sources and provider errors fail the run |
 | `--version`       | bool                         | `false`                        | top-level `me`          | Print version/build metadata and exit    |
 | `--help`          | bool                         | `false`                        | top-level + subcommands | Print help and exit                      |
+
+When `--strict` is **not** set, aggregate uses **best-effort** semantics (partial results, unknown `--source` names recorded in `errors[]`). There is no separate `--best-effort` flag.
 
 ## Commands
 
@@ -37,8 +38,8 @@ Help output is human-focused text regardless of output mode flags.
 ### `me` (default action)
 
 - **Intent:** Show identity information for current runtime user/environment.
-- **Provider usage:** default provider set unless constrained by `--source`.
-- **Resolution path:** `pkg/identity/aggregate` + `pkg/identity/model` (no direct platform command execution in handler).
+- **Provider usage:** when `--source` is omitted, all providers run (`osaccount`, `envcontext`, `network`, `sysinfo`, `authproviders`). If any `--source` is present, it **replaces** that full default (not additive).
+- **Resolution path:** `pkg/aggregate` + `pkg/identity/model` (no direct platform command execution in handler).
 - **Output modes:** text (default), compact, JSON, YAML.
 - **Help behavior:** `me --help` prints synopsis and global flag behavior.
 
@@ -52,8 +53,8 @@ me --json
 me --yaml
 me --source osaccount --source network
 me --source osaccount,network --source authproviders
+me --source osaccount,envcontext,network,sysinfo,authproviders
 me --strict
-me --best-effort
 ```
 
 ### `me whoami`
@@ -102,10 +103,15 @@ me id -u -r
 
 ## Provider Names (CLI Values)
 
-- `osaccount`
-- `envcontext`
-- `network`
-- `authproviders`
+**All providers (when `--source` omitted they all run), in order:**
+
+| Name            | Role |
+| --------------- | ---- |
+| `osaccount`     | Local OS user account fields (username, ids, home, shell, groups). |
+| `envcontext`    | Sudo, SSH, CI environment hints. |
+| `network`       | Hostname, FQDN, domain/workgroup, local addresses. |
+| `sysinfo`       | `GOOS`/`GOARCH`, OS name/version. |
+| `authproviders` | Git and cloud auth hints. |
 
 Unknown source handling:
 
@@ -117,7 +123,7 @@ Unknown source handling:
 - Output mode flags are mutually exclusive:
   - `--text/-t`, `--compact/-c`, `--json`, `--yaml`
 - If no output-mode flag is provided, behavior is equivalent to `--text`.
-- `--strict` and `--best-effort` are mutually exclusive.
+- Without `--strict`, runs are best-effort by default.
 - `--source` supports mixed forms:
   - repeatable entries
   - comma-separated lists

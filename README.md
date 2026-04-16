@@ -26,6 +26,28 @@ make build
 go build -o me ./cmd/me
 ```
 
+### Identity providers (`me` default command)
+
+The default `me` command loads **identity providers** and merges their output into one document (text, compact, JSON, or YAML).
+
+**When `--source` is omitted**, all of the following run, in order:
+
+| Provider        | Purpose |
+| --------------- | ------- |
+| `osaccount`     | Local user account: username, uid/gid, home, shell, groups (where supported). |
+| `envcontext`    | Environment hints: sudo user, SSH user, CI detection. |
+| `network`       | Hostname, FQDN, domain/workgroup, local addresses. |
+| `sysinfo`       | OS/runtime facts: `GOOS`/`GOARCH`, friendly OS name/version. |
+| `authproviders` | Git user/email and best-effort cloud identity hints (AWS/GCP/Azure). |
+
+**`--source` semantics:** If you pass **any** `--source`, that list **replaces** the full default set entirely—it is not additive. To run a subset only, name only those providers, for example:
+
+```bash
+me --source osaccount,sysinfo
+```
+
+Use `me --help` for the same provider list and behavior. Unknown provider names are reported in JSON/YAML `errors` in best-effort mode, or fail with exit code `2` when `--strict` is set.
+
 ### Running the CLI
 
 ```bash

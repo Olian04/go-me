@@ -26,7 +26,7 @@ format:
 	gofmt -w .
 
 build:
-	go build -trimpath -ldflags "-s -w -X github.com/Olian04/go-me/cmd/me/version.Revision=$(REV) -X github.com/Olian04/go-me/cmd/me/version.BuildTime=$(BUILD_TIME)" -o me ./cmd/me
+	go build -trimpath -ldflags "-s -w -X github.com/Olian04/go-me/cmd/me/version.Version=dev -X github.com/Olian04/go-me/cmd/me/version.Revision=$(REV) -X github.com/Olian04/go-me/cmd/me/version.BuildTime=$(BUILD_TIME)" -o me ./cmd/me
 
 build-release:
 	@command -v syft >/dev/null 2>&1 || { echo >&2 "syft not on PATH (install: https://github.com/anchore/syft#installation)"; exit 1; }

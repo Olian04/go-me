@@ -18,13 +18,15 @@
 
 Default behavior is a compact, human-friendly identity summary.
 
-Default summary includes:
+Default summary (with the **default provider set**: all of `osaccount`, `envcontext`, `network`, `sysinfo`, `authproviders`) includes:
 
 - Primary username (resolved from OS account source)
 - UID/GID (or platform equivalent when available)
 - Home directory
-- Current host name
+- Current host name (`meta.hostname` and/or network source)
 - Context hints (sudo/ssh/ci) when present
+- OS/architecture and friendly OS name/version (`sysinfo`)
+- Git/cloud identity hints when present (`authproviders`)
 
 This default is intentionally short and easy to scan.
 
@@ -57,7 +59,8 @@ Global flags apply to `me` and all subcommands unless overridden.
   - Provider deadline budget (e.g. `2s`, `500ms`).
   - Applies to aggregate provider execution.
 - `--source <name>`
-  - Limits active providers.
+  - Selects which providers run, **in order**. When **omitted**, all providers run: `osaccount`, `envcontext`, `network`, `sysinfo`, `authproviders`.
+  - When **any** `--source` is present, it **replaces** that full default list entirely (not additive).
   - Supports mixed input forms:
     - repeatable: `--source osaccount --source network`
     - comma-separated: `--source osaccount,network`
@@ -65,9 +68,8 @@ Global flags apply to `me` and all subcommands unless overridden.
 - `--strict`
   - Strict validation and failure handling.
   - Unknown source names fail with exit `2`.
-- `--best-effort`
-  - Allow partial results with non-fatal provider errors.
-  - Default mode for v1.
+- Best-effort vs strict
+  - Unless `--strict` is set, aggregate runs in best-effort mode (partial results, unknown sources recorded in `errors[]`).
 - `--version`
   - Print version/build metadata and exit.
 - `--help`
@@ -84,23 +86,29 @@ Human output must use stable section ordering and labels so users can visually p
 
 ### Default `me` human layout (concise)
 
+Rendering uses label/value columns (same tabwriter style as `--version` text): aligned labels on the left, values on the right.
+
 Order:
 
-1. Identity line (`username` and optional display name)
-2. Account line (`uid`, `gid`)
-3. Path line (`home`, `shell`)
-4. Host/context line (`hostname`, context hints such as `sudo`, `ssh`, `ci`)
-5. Optional warning line (only when partial data/failures exist)
+1. Core subject (always, missing values use `<unknown>`): `Username`, optional `Display name`, `UID`, `GID`, `Home`, `Shell`, `Hostname`
+2. When the `sysinfo` source ran: `OS` (friendly name from `os_name` when present, otherwise `platform` / `GOOS`), optional `OS version`, `Architecture` (`arch` / `GOARCH`), optional `Platform` when both `os_name` and `platform` are set
+3. Optional env context when present: `Sudo user`, `Sudo UID`, `SSH user`, `CI actor`, `CI provider`, or `CI` / `active` when CI is detected but actor/provider are empty
+4. Optional network identity hints when present: `FQDN`, `Domain`, `Workgroup`
+5. Optional auth identity hints when present: `Git user`, `Git email`, cloud rows (`AWS ARN`, `AWS account`, `GCP account`, `GCP project`, `Azure user`, `Azure tenant`, `Azure subscription`)
+6. Optional `Warnings:` block (only when partial data/failures exist)
+
+Timestamps, aggregate duration, and strict/best-effort flags are omitted from human text; use `--json` or `--yaml` for the full document.
 
 Missing-value rules:
 
-- Unknown field in human mode shows `<unknown>`.
+- Unknown field in human mode shows `<unknown>` (core subject rows only).
+- Optional rows are omitted entirely when the underlying value is empty.
 - Compact format uses empty segments instead of `<unknown>`.
 - Empty values should not reorder or remove labels.
 
 ### Extended human detail behavior
 
-When additional providers are requested via `--source`, human mode extends to include per-source detail sections while preserving the default base ordering.
+When `--source` selects a subset of providers, human mode includes only those sources' detail sections while preserving the default base ordering for rows that apply.
 
 Color rules:
 
@@ -169,13 +177,14 @@ Each identity source is implemented as its own package:
 - `pkg/identity/osaccount`
 - `pkg/identity/envcontext`
 - `pkg/identity/network`
+- `pkg/identity/sysinfo` (GOOS/GOARCH, OS name/version)
 - `pkg/identity/authproviders`
 
 Shared packages:
 
 - `pkg/identity/model`: canonical data structures
 - `pkg/identity/provider`: provider interface and capability metadata
-- `pkg/identity/aggregate`: orchestration, timeout handling, result merge, and error policy
+- `pkg/aggregate`: orchestration, timeout handling, result merge, and error policy
 
 ## Implementation Contract
 
@@ -218,7 +227,7 @@ Source validation semantics:
 
 Compatibility command note:
 
-- `me whoami` and `me id` follow GNU Coreutils semantics and are not affected by `--source`, `--best-effort`, or `--strict` flags unless those semantics already exist in GNU behavior.
+- `me whoami` and `me id` follow GNU Coreutils semantics and are not affected by top-level `me` identity flags (`--source`, `--strict`, output modes, etc.).
 
 ## GNU Compatibility Reference
 
@@ -231,7 +240,7 @@ When platform-native behavior (macOS BSD tools, Windows equivalents) differs, `m
 ## urfave/cli/v3 Mapping
 
 - App bootstrap in `cmd/me` defines global flags and command tree.
-- Each command action delegates to a use-case layer in `pkg/identity/aggregate`.
+- Each command action delegates to a use-case layer in `pkg/aggregate`.
 - Error-to-exit-code mapping is centralized (single translator).
 - Output rendering is centralized by mode (`text`, `compact`, `json`, `yaml`) and reused by commands.
 - Help rendering stays on default urfave help printer path for v1.
