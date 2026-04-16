@@ -18,6 +18,10 @@ on:
 jobs:
   release:
     runs-on: ubuntu-latest
+    environment: release
+    concurrency:
+      group: release
+      cancel-in-progress: false
     permissions:
       contents: write
 
@@ -80,6 +84,11 @@ jobs:
       - name: Create and push release tag
         run: |
           VERSION="${{ steps.version.outputs.version }}"
+          git fetch --prune --tags origin
+          if git rev-parse -q --verify "refs/tags/$VERSION" >/dev/null 2>&1; then
+            echo "::error::Tag '$VERSION' already exists. Refusing to overwrite."
+            exit 1
+          fi
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git tag -a "$VERSION" -m "Release $VERSION" "${GITHUB_SHA}"
@@ -96,6 +105,9 @@ jobs:
           args: release --clean --verbose --config goreleaser/.goreleaser.yaml
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          HOMEBREW_TAP_TOKEN: ${{ secrets.HOMEBREW_TAP_TOKEN }}
+          SCOOP_BUCKET_TOKEN: ${{ secrets.SCOOP_BUCKET_TOKEN }}
+          WINGET_TOKEN: ${{ secrets.WINGET_TOKEN }}
           ME_BUILD_TIME: ${{ env.ME_BUILD_TIME }}
           RELEASE_NAME: ${{ env.RELEASE_NAME }}
           RELEASE_BODY: ${{ env.RELEASE_BODY }}
@@ -106,3 +118,23 @@ jobs:
           SCOOP_BUCKET_NAME: ${{ env.SCOOP_BUCKET_NAME }}
           WINGET_REPO_OWNER: ${{ env.WINGET_REPO_OWNER }}
           WINGET_REPO_NAME: ${{ env.WINGET_REPO_NAME }}
+
+      - name: Post-release verification checklist
+        if: always()
+        run: |
+          VERSION="${{ steps.version.outputs.version }}"
+          {
+            echo "## Release summary"
+            echo ""
+            echo "- Version: \`$VERSION\`"
+            echo "- Triggered by: \`${{ github.actor }}\`"
+            echo "- Environment: \`release\`"
+            echo ""
+            echo "## Verify"
+            echo ""
+            echo "- [ ] GitHub Release exists for tag \`$VERSION\` and includes binaries + \`checksums.txt\`"
+            echo "- [ ] SBOM artifacts present"
+            echo "- [ ] Homebrew tap update PR/commit created"
+            echo "- [ ] Scoop bucket update PR/commit created"
+            echo "- [ ] winget manifest update PR created"
+          } >> "$GITHUB_STEP_SUMMARY"
